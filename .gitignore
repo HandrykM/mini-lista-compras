@@ -1,0 +1,54 @@
+# =====================================
+# 🔹 ARCHIVOS GENERALES DEL SISTEMA
+# =====================================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
+
+# =====================================
+# 🔹 ENTORNOS VIRTUALES DE PYTHON (BACKEND)
+# =====================================
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# =====================================
+# 🔹 ARCHIVOS DE CONFIGURACIÓN Y ENTORNOS
+# =====================================
+.env
+*.env
+
+# =====================================
+# 🔹 DEPENDENCIAS DE NODE (FRONTEND)
+# =====================================
+node_modules/
+dist/
+build/
+
+# =====================================
+# 🔹 ARCHIVOS DE COMPILACIÓN Y CACHÉ
+# =====================================
+*.egg-info/
+*.egg
+*.db
+*.sqlite3
+.cache/
+coverage/
+__pycache__/
+.mypy_cache/
+pytest_cache/
+*.spec
+
+# =====================================
+# 🔹 OTROS (OPCIONALES)
+# =====================================
+docker-compose.override.yml
+*.pid
+*.bak
+*.swp
