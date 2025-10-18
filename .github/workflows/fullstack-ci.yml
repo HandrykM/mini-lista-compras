@@ -30,7 +30,7 @@ jobs:
 
       - name: Run backend tests
         run: |
-          pytest || echo "No backend tests found"
+          pytest || echo "No se encontraron pruebas de backend."
 
   frontend:
     name: Build React frontend
