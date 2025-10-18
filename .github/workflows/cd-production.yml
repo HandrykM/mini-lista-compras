@@ -17,7 +17,7 @@ jobs:
           npm run build
 
       - name: Deploy Backend to Render
-        uses: johnbeynon/render-deploy-action@v1
+        uses: johnbeynon/render-deploy-action@v0.0.8
         with:
           service-id: ${{ secrets.RENDER_SERVICE_ID_PROD }}
           api-key: ${{ secrets.RENDER_API_KEY }}
