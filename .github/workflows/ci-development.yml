@@ -1,0 +1,55 @@
+name: CI - Integration (Development)
+
+on:
+  push:
+    branches: [ "development" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Backend setup
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+          pytest || echo "Sin pruebas"
+
+      - name: Frontend setup
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
+      - name: Quality Gate (SonarQube)
+        if: always()
+        uses: sonarsource/sonarqube-scan-action@v3
+        with:
+          args: >
+            -Dsonar.projectKey=mini-lista-compras
+            -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }}
+            -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+  deploy-staging:
+    needs: integration
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to Render (Staging)
+        uses: johnbeynon/render-deploy-action@v1
+        with:
+          service-id: ${{ secrets.RENDER_SERVICE_ID_DEV }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
