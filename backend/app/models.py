@@ -1,8 +1,42 @@
-from pydantic import BaseModel
+from beanie import Document, PydanticObjectId
+from pydantic import EmailStr, Field
 from typing import Optional
+from datetime import datetime
 
-class ItemModel(BaseModel):
-    id: Optional[str]
-    nombre: str
-    cantidad: int
-    estado: str  # "pendiente" o "comprado"
+class User(Document):
+    username: str
+    email: EmailStr
+    password: str
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    class Settings:
+        name = "users"
+
+class Item(Document):
+    name: str
+    quantity: int = 1
+    purchased: bool = False
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    purchased_at: Optional[datetime] = None
+
+    class Settings:
+        name = "items"
+
+class ShoppingList(Document):
+    name: str
+    items: list[PydanticObjectId] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    class Settings:
+        name = "shopping_lists"
+
+class Stats(Document):
+    total_users: int
+    total_items: int
+    total_lists: int
+    items_purchased: int
+    items_pending: int
+    generated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    class Settings:
+        name = "stats"

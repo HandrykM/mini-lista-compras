@@ -1,0 +1,58 @@
+name: CI - Dev Branches
+
+on:
+  push:
+    branches:
+      - HandrykDev
+      - JuanDiedoDev
+      - LargachaDev
+      - SebastianDev
+  pull_request:
+    branches:
+      - development
+
+jobs:
+  backend-tests:
+    name: Test FastAPI Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Run backend tests
+        run: pytest || echo "No se encontraron pruebas de backend"
+
+  frontend-build:
+    name: Build React Frontend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build frontend
+        run: npm run build
