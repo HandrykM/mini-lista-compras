@@ -1,34 +1,50 @@
-from fastapi import APIRouter, HTTPException
-from database import db
-from models import ItemModel
-from schemas import item_entity, items_entity
-from bson import ObjectId
+# app/routes/items_routes.py
 
-router = APIRouter()
+from fastapi import APIRouter, HTTPException, status, Response
+from beanie import PydanticObjectId
+from backend.app.models import Item
+from backend.app.schemas import ItemCreate, ItemResponse, ItemUpdate, ItemPurchase
+from backend.app.repository.items_repository import (
+    crear_item,
+    actualizar_item,
+    eliminar_item,
+    marcar_item_comprado
+)
 
-@router.get("/")
-async def get_items():
-    items = await db.items.find().to_list(100)
-    return items_entity(items)
+router = APIRouter(prefix="/items", tags=["Items"])
 
-@router.post("/")
-async def create_item(item: ItemModel):
-    new_item = item.dict()
-    res = await db.items.insert_one(new_item)
-    created = await db.items.find_one({"_id": res.inserted_id})
-    return item_entity(created)
 
-@router.put("/{id}")
-async def update_item(id: str, item: ItemModel):
-    await db.items.update_one({"_id": ObjectId(id)}, {"$set": item.dict()})
-    updated = await db.items.find_one({"_id": ObjectId(id)})
+# Crear un nuevo ítem
+@router.post("/", response_model=ItemResponse, status_code=status.HTTP_201_CREATED)
+async def create_item(payload: ItemCreate):
+    item = Item(name=payload.name, quantity=payload.quantity)  # purchased por defecto en el modelo
+    creado = await crear_item(item)
+    return ItemResponse.model_validate(creado, from_attributes=True)
+
+
+# Actualizar un ítem
+@router.put("/{item_id}", response_model=ItemResponse)
+async def update_item(item_id: PydanticObjectId, update: ItemUpdate):
+    data = update.model_dump(exclude_unset=True)
+    updated = await actualizar_item(item_id, data)
     if not updated:
         raise HTTPException(status_code=404, detail="Item no encontrado")
-    return item_entity(updated)
+    return ItemResponse.model_validate(updated, from_attributes=True)
 
-@router.delete("/{id}")
-async def delete_item(id: str):
-    result = await db.items.delete_one({"_id": ObjectId(id)})
-    if result.deleted_count == 0:
+
+# Eliminar ítem
+@router.delete("/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_item(item_id: PydanticObjectId):
+    ok = await eliminar_item(item_id)
+    if not ok:
         raise HTTPException(status_code=404, detail="Item no encontrado")
-    return {"mensaje": "Item eliminado"}
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# Marcar ítem como comprado
+@router.patch("/{item_id}/purchase", response_model=ItemResponse)
+async def mark_purchased(item_id: PydanticObjectId, body: ItemPurchase):
+    updated = await marcar_item_comprado(item_id, body.purchased)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Item no encontrado")
+    return ItemResponse.model_validate(updated, from_attributes=True)
