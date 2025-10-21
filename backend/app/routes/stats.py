@@ -1,11 +1,19 @@
-from fastapi import APIRouter
-from database import db
+from fastapi import APIRouter, HTTPException
+from backend.app.schemas import StatsResponse
+from backend.app.repository.stats_repository import snapshot_stats
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/stats",
+    tags=["Stats"]
+)
 
-@router.get("/")
+@router.get("/", response_model=StatsResponse)
 async def get_stats():
-    total = await db.items.count_documents({})
-    comprados = await db.items.count_documents({"estado": "comprado"})
-    porcentaje = (comprados / total * 100) if total > 0 else 0
-    return {"total": total, "comprados": comprados, "porcentaje": round(porcentaje, 2)}
+    """
+    Retorna estadísticas generales sobre los ítems en la base de datos.
+    """
+    try:
+        data = await snapshot_stats()
+        return StatsResponse.model_validate(data)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al obtener estadísticas: {e}")
