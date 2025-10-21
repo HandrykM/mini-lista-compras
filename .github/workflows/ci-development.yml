@@ -96,15 +96,3 @@ jobs:
           coverage-reports: |
             backend/coverage.xml
             frontend/coverage/lcov.info
-
-  deploy-staging:
-    needs: integration
-    runs-on: ubuntu-latest
-    if: false   # Desactivado temporalmente
-    steps:
-      - uses: actions/checkout@v4
-      - name: Deploy to Render (Staging)
-        uses: johnbeynon/render-deploy-action@v1
-        with:
-          service-id: ${{ secrets.RENDER_SERVICE_ID_DEV }}
-          api-key: ${{ secrets.RENDER_API_KEY }}
