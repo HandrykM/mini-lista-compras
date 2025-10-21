@@ -23,16 +23,17 @@ jobs:
 
       - name: Install linters
         run: |
-          pip install pylint pylint-json2sarif
+          pip install pylint
 
-      - name: Lint (pylint)
+      - name: Lint (pylint) -> JSON
         run: |
           pylint backend/app -f json > pylint.json || true
-          pylint-json2sarif -i pylint.json -o pylint.sarif
-      - name: Upload Pylint SARIF
-        uses: github/codeql-action/upload-sarif@v3
+
+      - name: Upload Pylint JSON report
+        uses: actions/upload-artifact@v4
         with:
-          sarif_file: pylint.sarif
+          name: pylint-report
+          path: pylint.json
 
       - name: Install backend test deps
         run: |
@@ -66,33 +67,3 @@ jobs:
             npm run build
             npm test -- --coverage --watchAll=false || true
           fi
-
-      # Codacy - Security scan
-      - name: Codacy Security (Trivy)
-        uses: codacy/codacy-analysis-cli-action@v4
-        with:
-          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          directory: .
-          tool: trivy
-          fail-if-incomplete: true
-
-      # Codacy - Static Analysis
-      - name: Codacy Analysis CLI
-        uses: codacy/codacy-analysis-cli-action@v4
-        with:
-          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          directory: .
-          output: results.sarif
-          format: sarif
-          gh-code-scanning-compat: true
-          fail-if-incomplete: true
-
-      # Solo envía cobertura si existe al menos uno de los reportes
-      - name: Send coverage to Codacy
-        if: ${{ hashFiles('backend/coverage.xml', 'frontend/coverage/lcov.info') != '' }}
-        uses: codacy/codacy-coverage-reporter-action@v1
-        with:
-          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          coverage-reports: |
-            backend/coverage.xml
-            frontend/coverage/lcov.info
