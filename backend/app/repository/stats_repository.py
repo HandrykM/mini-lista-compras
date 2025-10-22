@@ -1,5 +1,7 @@
 from datetime import datetime
-from backend.app.models import User, Item, ShoppingList
+from app.models import User, Item, ShoppingList
+
+# ... resto del código sin cambios
 
 
 async def obtener_total_usuarios() -> int:

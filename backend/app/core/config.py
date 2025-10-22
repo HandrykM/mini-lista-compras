@@ -1,3 +1,4 @@
+# backend/app/core/config.py
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
@@ -6,15 +7,21 @@ class Settings(BaseSettings):
     DEBUG: bool = True
 
     # MongoDB
-    MONGO_URI: str = "mongodb://localhost:27017"  # o tu cadena de Atlas desde .env
+    MONGO_URI: str = "mongodb://localhost:27017"
     DB_NAME: str = "shop_fast"
 
     # JWT
     SECRET_KEY: str = "cambiaesta"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+    
+    # CORS (NUEVO)
+    CORS_ORIGINS: list = [
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5173",
+    ]
 
-    # Pydantic Settings v2
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

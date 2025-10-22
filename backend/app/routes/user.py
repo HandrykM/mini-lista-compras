@@ -1,40 +1,73 @@
-from fastapi import APIRouter, HTTPException, status, Response
+from fastapi import APIRouter, HTTPException, status, Depends
 from beanie import PydanticObjectId
-from passlib.context import CryptContext
-from backend.app.models import User
-from backend.app.repository.users_repository import crear_usuario, actualizar_usuario, eliminar_usuario
-from backend.app.schemas import UserCreate, UserResponse, UserUpdate
+from app.models import User
+from app.schemas import UserCreate, UserResponse, TokenResponse, UserLogin
+from app.core.auth import get_password_hash, verify_password, create_access_token, get_current_user
 
-router = APIRouter(prefix="/users", tags=["Users"])
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-# Crear usuario
-@router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-async def create(user: UserCreate):
-    exists = await User.find_one(User.email == user.email)
-    if exists:
-        raise HTTPException(status_code=400, detail="El email ya está registrado")
-    hashed = pwd_context.hash(user.password)
-    nuevo = User(username=user.username, email=user.email, password=hashed)
-    creado = await crear_usuario(nuevo)
-    return UserResponse.model_validate(creado, from_attributes=True)
+# Registro
+@router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
+async def register(user_data: UserCreate):
+    # Verificar si el email ya existe
+    existing_user = await User.find_one(User.email == user_data.email)
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El email ya está registrado"
+        )
+    
+    # Verificar si el username ya existe
+    existing_username = await User.find_one(User.username == user_data.username)
+    if existing_username:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El nombre de usuario ya está en uso"
+        )
+    
+    # Crear usuario
+    hashed_password = get_password_hash(user_data.password)
+    new_user = User(
+        username=user_data.username,
+        email=user_data.email,
+        password=hashed_password
+    )
+    await new_user.insert()
+    
+    # Crear token
+    access_token = create_access_token(data={"sub": str(new_user.id)})
+    
+    return TokenResponse(
+        access_token=access_token,
+        user=UserResponse.model_validate(new_user, from_attributes=True)
+    )
 
-# Actualizar usuario
-@router.put("/{user_id}", response_model=UserResponse)
-async def update(user_id: PydanticObjectId, update: UserUpdate):
-    data = update.model_dump(exclude_unset=True)
-    if "password" in data:
-        data["password"] = pwd_context.hash(data["password"])
-    updated_user = await actualizar_usuario(user_id, data)
-    if not updated_user:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado.")
-    return UserResponse.model_validate(updated_user, from_attributes=True)
+# Login
+@router.post("/login", response_model=TokenResponse)
+async def login(credentials: UserLogin):
+    # Buscar usuario por email
+    user = await User.find_one(User.email == credentials.email)
+    
+    if not user or not verify_password(credentials.password, user.password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Email o contraseña incorrectos"
+        )
+    
+    # Crear token
+    access_token = create_access_token(data={"sub": str(user.id)})
+    
+    return TokenResponse(
+        access_token=access_token,
+        user=UserResponse.model_validate(user, from_attributes=True)
+    )
 
-# Eliminar usuario
-@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete(user_id: PydanticObjectId):
-    deleted = await eliminar_usuario(user_id)
-    if not deleted:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado.")
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+# Obtener usuario actual
+@router.get("/me", response_model=UserResponse)
+async def get_me(current_user: User = Depends(get_current_user)):
+    return UserResponse.model_validate(current_user, from_attributes=True)
 
+# Logout (opcional, solo limpia el token del lado del cliente)
+@router.post("/logout")
+async def logout(current_user: User = Depends(get_current_user)):
+    return {"message": "Sesión cerrada exitosamente"}
