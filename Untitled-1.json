@@ -1,0 +1,22 @@
+[
+    {
+        "type": "command",
+        "details": {
+            "key": "workbench.extensions.disableExtension",
+            "value": "github.copilot"
+        }
+    },
+    {
+        "type": "command",
+        "details": {
+            "key": "workbench.extensions.action.startExtensionBisect"
+        }
+    },
+    {
+        "type": "command",
+        "details": {
+            "key": "workbench.extensions.search",
+            "value": "auto activate venv python @recommended"
+        }
+    }
+]
