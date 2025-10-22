@@ -1,15 +1,12 @@
-# Nombre del Proyecto
+# mini-lista-compras
 
-Descripción corta: Una frase clara y concisa que explique qué hace este repositorio y por qué existe.
+Pequeña aplicación para gestionar una lista de la compra (CRUD de ítems). Esta plantilla está adaptada al repositorio HandrykM/mini-lista-compras (principalmente Python con frontend en JavaScript/CSS/HTML). Ajusta los comandos y nombres de archivo según el framework real (Flask/FastAPI/Django) que uses.
 
-Estado: WIP | Beta | Producción (eliminar lo que no aplique)
+Estado: WIP
 
 Badges:
 - build: ![build](https://img.shields.io/badge/build-pendiente-lightgrey)
 - license: ![license](https://img.shields.io/badge/license-MIT-blue)
-- issues: ![issues](https://img.shields.io/badge/issues-0-green)
-
----
 
 Índice
 - [Descripción](#descripción)
@@ -18,175 +15,168 @@ Badges:
 - [Requisitos](#requisitos)
 - [Instalación](#instalación)
 - [Uso](#uso)
-- [Configuración / Variables de entorno](#configuración--variables-de-entorno)
+- [Variables de entorno](#variables-de-entorno)
 - [Scripts útiles](#scripts-útiles)
 - [Estructura del proyecto](#estructura-del-proyecto)
 - [Testing](#testing)
-- [CI / CD](#ci--cd)
+- [Docker](#docker)
 - [Contribuir](#contribuir)
 - [Licencia](#licencia)
 - [Contacto](#contacto)
-- [Preguntas frecuentes (FAQ)](#preguntas-frecuentes-faq)
-
----
 
 ## Descripción
-Explica en 2–4 líneas el objetivo del proyecto, el público objetivo y el problema que resuelve. Añade contexto si es parte de un proyecto mayor o microservicio.
-
-Ejemplo:
-Este repositorio contiene una API REST para gestionar tareas (todo list) con autenticación JWT, persistencia en PostgreSQL y pruebas automatizadas. Está pensado para servir de plantilla para microservicios.
+mini-lista-compras es una aplicación simple para crear, listar, editar y eliminar elementos de una lista de la compra. Está pensada como proyecto pequeño para aprender y desplegar fácilmente.
 
 ## Características
-- Autenticación (JWT / OAuth) — opcional
-- CRUD para recursos principales
-- Tests unitarios e integración
-- Dockerizado para desarrollo y despliegue
-- Linter y formateador configurados
+- Añadir / editar / eliminar ítems
+- Marcar ítems como comprados
+- Interfaz web ligera (HTML/CSS/JS)
+- API REST (backend en Python)
+- Persistencia simple (SQLite por defecto, opcionalmente PostgreSQL)
 
 ## Tecnologías
-- Lenguaje: Node.js (TypeScript) / Python / Go / otro — ajustar según el repo
-- Base de datos: PostgreSQL / MySQL / MongoDB — ajustar según el repo
-- Contenedores: Docker
-- CI: GitHub Actions (ejemplo)
-
-(Ajusta esta sección a las tecnologías reales del proyecto.)
+- Backend: Python (Flask / FastAPI / Django — ajustar según el repo)
+- Frontend: JavaScript, HTML, CSS
+- Base de datos por defecto: SQLite (configurable a PostgreSQL)
+- Contenedores: Docker (opcional)
+- Tests: pytest (recomendado)
 
 ## Requisitos
-- Git >= 2.x
-- Node >= 16 (si aplica) o Python >= 3.8 (si aplica)
-- Docker y Docker Compose (recomendado para entornos locales)
-- Acceso a la base de datos (o usar contenedor)
+- Python 3.8+
+- pip
+- (opcional) Docker y docker-compose
+- git
 
-## Instalación (ejemplo para Node)
+## Instalación (local, virtualenv)
 1. Clona el repositorio:
-   git clone https://github.com/<owner>/<repo>.git
-2. Entra al directorio:
-   cd <repo>
+   ```bash
+   git clone https://github.com/HandrykM/mini-lista-compras.git
+   cd mini-lista-compras
+   ```
+2. Crea y activa un entorno virtual:
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate   # Linux / macOS
+   .venv\Scripts\activate      # Windows
+   ```
 3. Instala dependencias:
-   npm install
-   # o
-   yarn install
-4. Copia el fichero de ejemplo de variables de entorno:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Copia el ejemplo de variables de entorno:
+   ```bash
    cp .env.example .env
-5. Configura las variables en .env (ver sección abajo).
-6. Levanta dependencias con Docker (opcional):
-   docker-compose up -d
+   ```
+   Edita `.env` con las claves adecuadas.
 
-(Para Python: crea un virtualenv, pip install -r requirements.txt. Para Go: go mod download, etc.)
+5. Inicializa la base de datos (ejemplo SQLite):
+   - Si usas Flask con Flask-Migrate:
+     ```bash
+     flask db upgrade
+     ```
+   - Si usas Django:
+     ```bash
+     python manage.py migrate
+     ```
+   - Si usas un script de inicialización:
+     ```bash
+     python scripts/init_db.py
+     ```
 
-## Uso
-Comandos habituales:
-- Iniciar en modo desarrollo:
-  npm run dev
-  # o
-  yarn dev
+## Uso (ejemplos)
+- Flask (si el repo usa Flask):
+  ```bash
+  export FLASK_APP=app.py
+  export FLASK_ENV=development
+  flask run --reload
+  ```
+- FastAPI (si el repo usa FastAPI):
+  ```bash
+  uvicorn main:app --reload --port 8000
+  ```
+- Django:
+  ```bash
+  python manage.py runserver
+  ```
 
-- Construir para producción:
-  npm run build
-  npm start
+Accede a: http://localhost:8000 (o puerto configurado).
 
-- Ejecutar con Docker:
-  docker build -t <repo-name> .
-  docker run --env-file .env -p 3000:3000 <repo-name>
+Ejemplo de petición a la API:
+```bash
+curl -X GET http://localhost:8000/api/items
+```
 
-Ejemplo de petición (si es una API):
-GET /api/v1/tareas
-curl -H "Authorization: Bearer <token>" https://api.ejemplo.com/api/v1/tareas
+## Variables de entorno (ejemplo .env)
+```
+FLASK_ENV=development
+SECRET_KEY=tu_secreto_aqui
+DATABASE_URL=sqlite:///./data.db
+PORT=8000
+```
 
-## Configuración / Variables de entorno
-Crea un archivo `.env` en la raíz con las variables necesarias. Ejemplo mínimo:
-NODE_ENV=development
-PORT=3000
-DATABASE_URL=postgres://user:pass@localhost:5432/dbname
-JWT_SECRET=tu_secreto_aqui
+Incluye un archivo `.env.example` con los nombres de variables sin valores reales.
 
-Incluye un `.env.example` en el repo con variables sin valores reales para referencia.
+## Scripts útiles (ajusta según package)
+- Iniciar en desarrollo:
+  - Flask: `flask run`
+  - FastAPI: `uvicorn main:app --reload`
+- Tests: `pytest`
+- Linter: `flake8` / `pylint`
+- Formateo: `black`
 
-## Scripts útiles
-- npm run lint — ejecutar linter
-- npm run format — formatear código
-- npm run test — ejecutar tests
-- npm run coverage — generar reporte de cobertura
-- npm run migrate — ejecutar migraciones de DB
-- npm run seed — poblar datos de ejemplo
-
-(Ajustar según scripts reales del package.json o Makefile.)
-
-## Estructura del proyecto
-Ejemplo de estructura:
-- src/            # código fuente
-  - controllers/
+## Estructura propuesta del proyecto
+- app/ or src/
+  - static/        # js, css, imágenes
+  - templates/     # HTML (si aplica)
+  - models.py
+  - routes.py / views.py / api/
   - services/
-  - models/
-  - routes/
-  - config/
-- tests/          # pruebas
-- docker/
-- .github/workflows/
+  - config.py
+- tests/
+- requirements.txt
+- Dockerfile
+- docker-compose.yml
+- .env.example
 - README.md
-- package.json
 
-Actualiza esta sección con la estructura real del repo.
+Ajusta esta estructura a la real en el repo.
 
 ## Testing
-Cómo ejecutar tests localmente:
-1. Configura test DB (p. ej. en .env.test).
-2. Ejecuta:
-   npm run test
+- Ejecutar tests:
+  ```bash
+  pytest
+  ```
+- Para usar una DB de pruebas, configura `DATABASE_URL` a una DB separada o usa fixtures que aíslen la DB.
 
-Cobertura:
-npm run coverage
-
-Asegúrate de que las pruebas no toquen datos de producción y que usen una base aislada o mocks.
-
-## CI / CD
-Este repositorio incluye (o puede incluir) integración con GitHub Actions:
-- lint.yml — comprueba estilo y linter
-- test.yml — ejecuta tests en cada PR
-- release.yml — despliega versiones a entorno (opcional)
-
-Incluye el ejemplo de flujo que necesites en `.github/workflows/`.
+## Docker (opcional)
+Ejemplo mínimo para desarrollo:
+```dockerfile
+FROM python:3.11-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install -r requirements.txt
+COPY . .
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+Ejecutar:
+```bash
+docker build -t mini-lista-compras .
+docker run --env-file .env -p 8000:8000 mini-lista-compras
+```
 
 ## Contribuir
-Guía rápida:
-1. Haz fork del repositorio
-2. Crea una rama: git checkout -b feat/mi-nueva-funcionalidad
-3. Escribe tests y actualiza la documentación
-4. Haz commit con un mensaje claro
-5. Abre un Pull Request describiendo el cambio
+1. Haz fork
+2. Crea rama feature: `git checkout -b feat/nueva-funcionalidad`
+3. Escribe tests y documentación
+4. Haz PR describiendo cambios
 
-Políticas:
-- Sigue el estándar de commits (opcional: Conventional Commits)
-- Ejecuta linter y tests antes de enviar PR
-- Añade reviewers y asigna etiqueta correspondiente
+Sigue convenciones de commits y ejecuta linters/tests antes de enviar PR.
 
 ## Licencia
-Este proyecto está bajo la licencia MIT. Cambia según corresponda.
-
-LICENSE: MIT (o la que corresponda)
+MIT. Cambia según corresponda.
 
 ## Contacto
-Autor: Ju4nD13go (u otro nombre real)
-Email: tu-email@ejemplo.com
-GitHub: https://github.com/Ju4nD13go
+Autor: Ju4nD13go
+Repositorio: https://github.com/HandrykM/mini-lista-compras
 
-## Preguntas frecuentes (FAQ)
-- ¿Cómo arranco la base de datos localmente?
-  Usa `docker-compose up` con el servicio de la base de datos definido en `docker-compose.yml`.
-- ¿Dónde configuro credenciales sensibles?
-  En variables de entorno; no guardes secretos en el repo.
-- ¿Cómo hago migraciones?
-  Dependiendo del ORM: `npm run migrate` o `alembic upgrade head`, etc.
-
----
-
-Notas finales
-- Reemplaza los placeholders (Nombre del Proyecto, comandos y configuraciones) por la información real del repositorio.
-- Si quieres, puedo generar un README adaptado automáticamente si me das:
-  - Nombre del proyecto
-  - Lenguaje/stack (Node, Python, Go, etc.)
-  - Comandos reales (start, test, build)
-  - Servicios externos usados (Postgres, Redis, S3...)
-  - Archivo .env.example (o listar variables)
-
-¿Quieres que lo personalice con los datos reales del repo? Envíame el stack y los comandos y lo actualizo.
+Notas: reemplaza las secciones de comandos e inicialización con los archivos concretos del repo (por ejemplo, `app.py`, `main.py`, `manage.py`, `requirements.txt`) para que el README quede 1:1 con este repositorio.
