@@ -1,0 +1,49 @@
+# ---------- build stage ----------
+FROM python:3.11-slim AS builder
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# Instalación de dependencias de sistema que puedan ser necesarias
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends build-essential gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiamos requirements e instalamos en un directorio de wheel
+COPY backend/requirements.txt ./requirements.txt
+RUN pip install --upgrade pip
+RUN pip wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
+
+# ---------- final stage ----------
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# Crear user no-root
+RUN useradd -m appuser
+
+# Copiar wheels e instalar
+COPY --from=builder /wheels /wheels
+RUN pip install --no-cache-dir /wheels/*
+
+# Copiar el código de la app (ajusta si tu estructura no es backend/)
+COPY backend/ ./
+
+# Asigna permisos
+RUN chown -R appuser:appuser /app
+USER appuser
+
+# Puerto expuesto por la app
+EXPOSE 8000
+
+# Comando de producción: gunicorn con workers uvicorn
+CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "app.main:app", \
+     "--bind", "0.0.0.0:8000", \
+     "--workers", "4", \
+     "--timeout", "120", \
+     "--log-level", "info"]
