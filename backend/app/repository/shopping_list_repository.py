@@ -1,6 +1,6 @@
 from typing import Optional, Dict, Any
 from beanie import PydanticObjectId
-from backend.app.models import ShoppingList
+from app.models import ShoppingList
 
 # Crear una nueva lista de compras
 async def crear_lista(shopping_list: ShoppingList) -> ShoppingList:
