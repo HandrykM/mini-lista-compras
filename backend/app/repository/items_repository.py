@@ -1,7 +1,9 @@
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from beanie import PydanticObjectId
-from backend.app.models import Item
+from app.models import Item
+
+# ... resto del código sin cambios
 
 async def crear_item(item: Item) -> Item:
     await item.insert()

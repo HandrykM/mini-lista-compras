@@ -1,16 +1,32 @@
-import { useEffect } from "react";
 import { useStore } from "../store/useStore";
 
 export default function StatsBar() {
-  const { stats, fetchStats } = useStore();
-
-  useEffect(() => { fetchStats(); }, []);
+  const { stats } = useStore();
 
   return (
-    <div className="stats">
-      <p>Total: {stats.total || 0}</p>
-      <p>Comprados: {stats.comprados || 0}</p>
-      <p>Progreso: {stats.porcentaje || 0}%</p>
+    <div className="stats-bar">
+      <div className="stat-item">
+        <span className="stat-label">Total</span>
+        <span className="stat-value">{stats.total || 0}</span>
+      </div>
+      <div className="stat-item">
+        <span className="stat-label">Comprados</span>
+        <span className="stat-value comprados">{stats.comprados || 0}</span>
+      </div>
+      <div className="stat-item">
+        <span className="stat-label">Pendientes</span>
+        <span className="stat-value pendientes">{stats.pendientes || 0}</span>
+      </div>
+      <div className="stat-item progress">
+        <span className="stat-label">Progreso</span>
+        <div className="progress-bar">
+          <div 
+            className="progress-fill" 
+            style={{ width: `${stats.porcentaje || 0}%` }}
+          />
+          <span className="progress-text">{stats.porcentaje || 0}%</span>
+        </div>
+      </div>
     </div>
   );
 }

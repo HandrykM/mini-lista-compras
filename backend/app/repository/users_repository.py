@@ -1,6 +1,8 @@
 from typing import Optional, Dict, Any
 from beanie import PydanticObjectId
-from backend.app.models import User
+from app.models import User
+
+# ... resto del código sin cambios
 
 async def crear_usuario(user: User) -> User:
     await user.insert()
