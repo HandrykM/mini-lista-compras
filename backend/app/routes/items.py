@@ -2,9 +2,9 @@
 
 from fastapi import APIRouter, HTTPException, status, Response
 from beanie import PydanticObjectId
-from backend.app.models import Item
-from backend.app.schemas import ItemCreate, ItemResponse, ItemUpdate, ItemPurchase
-from backend.app.repository.items_repository import (
+from app.models import Item
+from app.schemas import ItemCreate, ItemResponse, ItemUpdate, ItemPurchase
+from app.repository.items_repository import (
     crear_item,
     actualizar_item,
     eliminar_item,
