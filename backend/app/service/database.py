@@ -1,30 +1,30 @@
 import os
+from fastapi import FastAPI
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 from app.core.config import settings
-# Importa SOLO tus documentos (no "List" de typing)
 from app.models import User, Item, Stats, ShoppingList
-
 
 _client: AsyncIOMotorClient | None = None
 
+MONGO_URI = os.getenv("MONGO_URI", settings.MONGO_URI)
+DB_NAME = os.getenv("DB_NAME", settings.DB_NAME)
 
-# URI de conexión a MongoDB (usar variable de entorno o valor predeterminado)
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
-DB_NAME = os.getenv("DB_NAME", "shop_fast")
+app = FastAPI(title="Mi API de Lista de Compras")
 
-
-# Inicializar la base de datos
 async def init_db():
     global _client
-    try:
-        if _client is None:
-            _client = AsyncIOMotorClient(settings.MONGO_URI)
-        db = _client[settings.DB_NAME]
-        # Pasa tus modelos Document
-        await init_beanie(database=db, document_models=[User, Item, Stats, ShoppingList])
-        print("Conexión a la base de datos establecida correctamente.")
-    except Exception as e:
-        print(f"Error al conectar a la base de datos: {e}")
-        raise
+    if _client is None:
+        _client = AsyncIOMotorClient(MONGO_URI)
+    db = _client[DB_NAME]
+    await init_beanie(database=db, document_models=[User, Item, Stats, ShoppingList])
+    print("Conexión a la base de datos establecida correctamente.")
 
+@app.on_event("startup")
+async def startup_event():
+    await init_db()
+
+# Endpoint de prueba para la raíz
+@app.get("/")
+async def root():
+    return {"message": "API en funcionamiento!"}
