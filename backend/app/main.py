@@ -1,41 +1,50 @@
+# app/main.py
+
+import os
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from motor.motor_asyncio import AsyncIOMotorClient
+from beanie import init_beanie
 from app.core.config import settings
-from app.service.database import init_db
-from app.routes import user, items, stats, shopping_list
+from app.models import User, Item, Stats, ShoppingList
 
-app = FastAPI(title=settings.APP_NAME, redirect_slashes=False)
+# Importar rutas
+from app.routes import items, shopping_list, stats, user
 
-# CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "https://tu-frontend.vercel.app",
-        "https://mini-lista-compras.onrender.com"
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+_client: AsyncIOMotorClient | None = None
 
+# URI y DB (pueden venir de variables de entorno)
+MONGO_URI = os.getenv("MONGO_URI", settings.MONGO_URI)
+DB_NAME = os.getenv("DB_NAME", settings.DB_NAME)
+
+app = FastAPI(title="Mini Lista de Compras")
+
+# Inicialización de la base de datos
+async def init_db():
+    global _client
+    if _client is None:
+        _client = AsyncIOMotorClient(MONGO_URI)
+    db = _client[DB_NAME]
+    await init_beanie(database=db, document_models=[User, Item, Stats, ShoppingList])
+    print("Conexión a la base de datos establecida correctamente.")
+
+# Eventos de arranque
 @app.on_event("startup")
-async def startup_event():
+async def on_startup():
     print("Conectando a MongoDB...")
-    await init_db()
-    print("MongoDB conectado correctamente.")
+    try:
+        await init_db()
+        print("MongoDB conectado correctamente.")
+    except Exception as e:
+        print(f"Error al conectar a la base de datos: {e}")
+        raise
 
-# Rutas
-app.include_router(user.router)
+# Incluyendo rutas
 app.include_router(items.router)
-app.include_router(stats.router)
 app.include_router(shopping_list.router)
+app.include_router(stats.router)
+app.include_router(user.router)
 
+# Root simple
 @app.get("/")
 async def root():
-    return {
-        "message": "Mini Lista de Compras API",
-        "status": "online",
-        "version": "2.0.0"
-    }
+    return {"message": "API Mini Lista de Compras activa!"}
