@@ -1,9 +1,9 @@
 import os
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
-from backend.app.core.config import settings
+from app.core.config import settings
 # Importa SOLO tus documentos (no "List" de typing)
-from backend.app.models import User, Item, Stats, ShoppingList
+from app.models import User, Item, Stats, ShoppingList
 
 
 _client: AsyncIOMotorClient | None = None
