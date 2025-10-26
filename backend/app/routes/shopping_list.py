@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status, Response
 from beanie import PydanticObjectId
-from backend.app.models import ShoppingList, Item
-from backend.app.schemas import ListCreate, ListResponse, ListUpdate
-from backend.app.repository.shopping_list_repository import (
+from app.models import ShoppingList, Item
+from app.schemas import ListCreate, ListResponse, ListUpdate
+from app.repository.shopping_list_repository import (
     obtener_todas_las_listas,
     obtener_lista_por_id,
     actualizar_lista as actualizar_lista_repo,
