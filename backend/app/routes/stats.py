@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
-from backend.app.schemas import StatsResponse
-from backend.app.repository.stats_repository import snapshot_stats
+from app.schemas import StatsResponse
+from app.repository.stats_repository import snapshot_stats
 
 router = APIRouter(
     prefix="/stats",
