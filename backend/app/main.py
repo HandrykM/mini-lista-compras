@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from backend.app.core.config import settings
-from backend.app.service.database import init_db
-from backend.app.routes import user, items, stats, shopping_list
+from app.core.config import settings
+from app.service.database import init_db
+from app.routes import user, items, stats, shopping_list
 
 app = FastAPI(title=settings.APP_NAME, redirect_slashes=False)
 
