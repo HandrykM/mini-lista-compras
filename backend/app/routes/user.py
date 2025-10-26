@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException, status, Response
 from beanie import PydanticObjectId
 from passlib.context import CryptContext
-from backend.app.models import User
-from backend.app.repository.users_repository import crear_usuario, actualizar_usuario, eliminar_usuario
-from backend.app.schemas import UserCreate, UserResponse, UserUpdate
+from app.models import User
+from app.repository.users_repository import crear_usuario, actualizar_usuario, eliminar_usuario
+from app.schemas import UserCreate, UserResponse, UserUpdate
 
 router = APIRouter(prefix="/users", tags=["Users"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
