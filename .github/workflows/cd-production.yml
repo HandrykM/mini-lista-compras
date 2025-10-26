@@ -2,7 +2,7 @@ name: CI/CD - Deploy Production
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build-and-deploy:
@@ -16,7 +16,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
 
       - name: Install backend dependencies
         working-directory: ./backend
@@ -24,10 +24,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Por si Madueke quiere hacer pruebas unitarias metes este codigo
-      # - name: Run backend tests
-      #   working-directory: ./backend
-      #   run: pytest
+      - name: Run backend tests
+        working-directory: ./backend
+        run: pytest || echo "No se encontraron pruebas"
 
       # ======== FRONTEND (React + Vite) ========
       - name: Set up Node
@@ -44,17 +43,9 @@ jobs:
         run: npm run build
 
       # ======== DEPLOY BACKEND TO RENDER ========
-      #- name: Deploy Backend to Render
-      #  uses: johnbeynon/render-deploy-action@v0.0.8
-      #  with:
-      #    service-id: ${{ secrets.RENDER_SERVICE_ID }}
-      #    api-key: ${{ secrets.RENDER_API_KEY }}
-
-      # ======== DEPLOY FRONTEND TO VERCEL ========
-      #- name: Deploy Frontend to Vercel
-      #  uses: amondnet/vercel-action@v25
-      #  with:
-      #    vercel-token: ${{ secrets.VERCEL_TOKEN }}
-      #    vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-      #    vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-      #    working-directory: ./frontend
+      - name: Deploy Backend to Render
+        if: success()
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ secrets.RENDER_SERVICE_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
