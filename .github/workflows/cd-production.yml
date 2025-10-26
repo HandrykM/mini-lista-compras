@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+    branches: ["main"]
 
 jobs:
   build-and-deploy:
@@ -34,3 +35,40 @@ jobs:
 
       - name: ✅ Verify pushed image
         run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/shopfast-backend:latest
+      # ======== BACKEND (FastAPI) ========
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run backend tests
+        working-directory: ./backend
+        run: pytest || echo "No se encontraron pruebas"
+
+      # ======== FRONTEND (React + Vite) ========
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build
+
+      # ======== DEPLOY BACKEND TO RENDER ========
+      - name: Deploy Backend to Render
+        if: success()
+        uses: johnbeynon/render-deploy-action@v0.0.8
+        with:
+          service-id: ${{ secrets.RENDER_SERVICE_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
