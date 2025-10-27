@@ -1,14 +1,14 @@
-# backend/app/main.py
+# app/main.py
+
 import os
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 from app.core.config import settings
 from app.models import User, Item, Stats, ShoppingList
 
 # Importar rutas
-from app.routes import items, shopping_list, stats, user, auth
+from app.routes import items, shopping_list, stats, user
 
 _client: AsyncIOMotorClient | None = None
 
@@ -16,16 +16,7 @@ _client: AsyncIOMotorClient | None = None
 MONGO_URI = os.getenv("MONGO_URI", settings.MONGO_URI)
 DB_NAME = os.getenv("DB_NAME", settings.DB_NAME)
 
-app = FastAPI(title="Mini Lista de Compras - MiniList JH")
-
-# Configurar CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # En producción, especifica los dominios permitidos
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app = FastAPI(title="Mini Lista de Compras")
 
 # Inicialización de la base de datos
 async def init_db():
@@ -48,17 +39,12 @@ async def on_startup():
         raise
 
 # Incluyendo rutas
-app.include_router(auth.router)  # Ruta de autenticación
-app.include_router(user.router)
 app.include_router(items.router)
 app.include_router(shopping_list.router)
 app.include_router(stats.router)
+app.include_router(user.router)
 
 # Root simple
 @app.get("/")
 async def root():
-    return {
-        "message": "API Mini Lista de Compras - MiniList JH activa!",
-        "version": "1.0.0",
-        "docs": "/docs"
-    }
+    return {"message": "API Mini Lista de Compras activa!"}
